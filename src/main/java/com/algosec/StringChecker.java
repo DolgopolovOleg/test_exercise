@@ -7,24 +7,52 @@ public class StringChecker {
     /**
      * The set of words which will be used as a dictionary
      */
-    private Set<String> dictionary;
+//    private Set<String> dictionary;
+    private Set<CharNode> charDictionary = new LinkedHashSet<>();
 
     public StringChecker(Collection<String> dictionary) {
-        this.dictionary = buildDictionary(dictionary);
+        this.charDictionary = buildDictionary(dictionary);
     }
 
     public StringChecker() {
-        dictionary = new LinkedHashSet<>();
+        this.charDictionary = new LinkedHashSet<>();
     }
 
     /**
      * Method for building a dictionary. It changes words for future comparison and changes the word order
      */
-    private Set<String> buildDictionary(Collection<String> dictionary) {
-        return dictionary.stream()
+    private Set<CharNode> buildDictionary(Collection<String> dictionary) {
+        LinkedHashSet<String> words = dictionary.stream()
                 .sorted(Comparator.comparingInt(String::length))
                 .map(StringChecker::rangeLetters)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        for (String word : words) {
+            char[] chars = word.toCharArray();
+            CharNode current = null;
+            for (int i = 0; i < chars.length; i++) {
+                int num = i;
+                if (charDictionary.stream().anyMatch(cn -> cn.getCh() == chars[num])) {
+                    current = charDictionary.stream().filter(cn -> cn.getCh() == chars[num]).findFirst().orElse(null);
+                    continue;
+                }
+                if (current == null){
+                    current = new CharNode(chars[i], i == chars.length - 1, current);
+                    charDictionary.add(current);
+                } else {
+                    Optional<CharNode> first = current.getChildren().stream().filter(cn -> cn.getCh() == chars[num]).findFirst();
+                    if (!first.isPresent()) {
+                        CharNode charNode = new CharNode(chars[i], i == chars.length - 1, current);
+                        current.getChildren().add(charNode);
+                        current = charNode;
+                    } else {
+                        current = first.get();
+                    }
+                }
+            }
+        }
+
+        return charDictionary;
     }
 
     /**

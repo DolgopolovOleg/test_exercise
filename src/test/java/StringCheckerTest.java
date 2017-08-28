@@ -54,7 +54,7 @@ public class StringCheckerTest {
 
     @Test
     public void dictionaryTest(){
-        dictionary = Arrays.asList("a", "ab","ba","da","dc","abc","acb","cba","cab","bac","bca","abcd","abdc","acbd","acdb","bcda","cdba","dcba");
+        dictionary = Arrays.asList("abc","acb","cba","cab","bac","bca", "abcd", "bc");
         StringChecker checker = new StringChecker(dictionary);
         checker.checkString("acccccbd");
     }

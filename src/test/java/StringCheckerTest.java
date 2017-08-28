@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class StringCheckerTest {
 
-    private static List<String> dictionary = Arrays.asList("this", "is", "a", "valid", "sentence");
+    private static List<String> dictionary = Arrays.asList("valid", "sentence", "is", "a", "this");
     private static String testString = "thsisiavaildsentence";
 
     @Test
@@ -51,13 +51,4 @@ public class StringCheckerTest {
         checker = new StringChecker(newDictionary);
         assertTrue(checker.checkString(testString));
     }
-
-    @Test
-    public void dictionaryTest(){
-        dictionary = Arrays.asList("abc","acb","cba","cab","bac","bca", "abcd", "bc");
-        StringChecker checker = new StringChecker(dictionary);
-        checker.checkString("acccccbd");
-    }
-
-
 }

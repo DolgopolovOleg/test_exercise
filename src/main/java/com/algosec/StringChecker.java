@@ -7,7 +7,6 @@ public class StringChecker {
     /**
      * The set of words which will be used as a dictionary
      */
-//    private Set<String> dictionary;
     private Set<CharNode> charDictionary = new LinkedHashSet<>();
 
     public StringChecker(Collection<String> dictionary) {
@@ -32,11 +31,15 @@ public class StringChecker {
             CharNode current = null;
             for (int i = 0; i < chars.length; i++) {
                 int num = i;
-                if (charDictionary.stream().anyMatch(cn -> cn.getCh() == chars[num])) {
+                if (i == 0 && charDictionary.stream().anyMatch(cn -> cn.getCh() == chars[num])) {
                     current = charDictionary.stream().filter(cn -> cn.getCh() == chars[num]).findFirst().orElse(null);
                     continue;
                 }
-                if (current == null){
+                if (current != null && current.getChildren().stream().anyMatch(cn -> cn.getCh() == chars[num])) {
+                    current = current.getChildren().stream().filter(cn -> cn.getCh() == chars[num]).findFirst().orElse(null);
+                    continue;
+                }
+                if (current == null) {
                     current = new CharNode(chars[i], i == chars.length - 1, current);
                     charDictionary.add(current);
                 } else {
@@ -63,9 +66,14 @@ public class StringChecker {
      */
     public boolean checkString(String inputString) {
         if (inputString.length() == 0) return true;
-        for (String word : dictionary) {
-            if (checkWord(word, inputString))
-                return checkString(inputString.substring(word.length()));
+        for (int i = 1; i <= inputString.length(); i++) {
+            String word = rangeLetters(inputString.substring(0, i));
+
+            CharNode charNode = charDictionary.stream().filter(cn -> cn.getCh() == word.toCharArray()[0]).findAny().orElse(null);
+            if (charNode != null) {
+                if (checkWord(charNode, word))
+                    if (checkString(inputString.substring(i, inputString.length()))) return true;
+            }
         }
         return false;
     }
@@ -73,16 +81,22 @@ public class StringChecker {
     /**
      * Take a word from the string and check it
      *
-     * @param word        a word from the dictionary
+     * @param charNode a node from the dictionary
      * @param inputString string which will be used for the word
      * @return if a string starts with the {@code word}
      */
-    private boolean checkWord(String word, String inputString) {
-        if (inputString.length() < word.length()) return false;
-        String croppedString = inputString.substring(0, word.length());
-        croppedString = rangeLetters(croppedString);
-        if (croppedString.equals(word))
-            return checkString(inputString.substring(word.length()));
+    private boolean checkWord(CharNode charNode, String inputString) {
+        if (charNode == null) return false;
+        if (inputString.length() == 0) return false;
+        if (charNode.isHasWord()) return true;
+        for (int i = 1; i < inputString.length(); i++) {
+            int num = i;
+            CharNode childNode = charNode.getChildren().stream().filter(cn -> cn.getCh() == inputString.toCharArray()[num]).findAny().orElse(null);
+            String subString = inputString.substring(num, inputString.length());
+            if (childNode != null && childNode.isHasWord())
+                return true;
+            return checkWord(childNode, subString);
+        }
         return false;
     }
 
@@ -102,8 +116,8 @@ public class StringChecker {
                 .orElse("");
     }
 
-    public Set<String> getDictionary() {
-        return new LinkedHashSet<>(dictionary);
+    public Set<CharNode> getDictionary() {
+        return new LinkedHashSet<>(charDictionary);
     }
 }
 
